@@ -1,0 +1,4 @@
+3
+1 Sala_Aurora 100 iluminat wifi ac 1 200
+2 Sala_Polarius 300 parcare iluminat wifi 0 300
+3 Sala_Radius 500 wifi iluminat parcare 0 200
