@@ -17,4 +17,5 @@ public:
     bool esteValida() const;
 
     friend ostream& operator<<(ostream&, const Data&);
+    friend istream& operator>>(istream& in, Data& d);
 };

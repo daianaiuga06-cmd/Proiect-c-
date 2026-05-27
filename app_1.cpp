@@ -213,6 +213,7 @@ int main(int argc, char* argv[]) {
         }
 
         adaugareRezervare(rezervari, sali, idRez, idSala, zi, luna, an, argv[7], argv[8]);
+        cout<<"Rezervare adaugată!";
     }
 
     // ================= STERGERE REZERVARE =================
@@ -243,6 +244,61 @@ int main(int argc, char* argv[]) {
 
         cout << "Total incasari: " << incasariTotale(rezervari) << " lei\n";
     }
+
+    // ================= ACTUALIZARE DISPONIBILITATE =================
+
+    else if (cmd == "actualizare_disponibilitate") {
+
+    if (argc < 4) {
+        cout << "Utilizare: app1.exe actualizare_disponibilitate <ID> <da/nu>\n";
+        return 1;
+    }
+
+    int id;
+
+    if (!safeStoi(argv[2], id)) {
+        cout << "ID invalid!\n";
+        return 1;
+    }
+
+    string val = toLowerStr(argv[3]);
+
+    bool disp;
+
+    if (val == "da")
+        disp = true;
+
+    else if (val == "nu")
+        disp = false;
+
+    else {
+        cout << "Valoare invalida! Foloseste da sau nu.\n";
+        return 1;
+    }
+
+    bool gasit = false;
+
+    for (auto &s : sali) {
+
+        if (s.getID() == id) {
+
+            s.setDisponibilitate(disp);
+
+            gasit = true;
+
+            break;
+        }
+    }
+
+    if (!gasit) {
+        cout << "Sala nu exista!\n";
+        return 1;
+    }
+
+    salvareSali(sali);
+
+    cout << "Disponibilitate actualizata!\n";
+}
 
     // ================= COMANDA NECUNOSCUTA =================
 

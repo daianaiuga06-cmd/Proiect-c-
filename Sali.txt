@@ -1,6 +1,6 @@
 5
-1 Sala_Aurora 100 3 wifi iluminat parcare 0 5000
-2 Sala_Verga 200 2 wifi parcare 0 3000
-3 Sala_Polarius 300 4 wifi parcare iluminat artificii 0 6000
-4 Sala_Varius 500 6 wifi parcare iluminat ac artificii joc-lumini 0 8000
-4 Sala_Corius 400 3 wifi parcare ac 0 5000
+1 Sala_Aurora 150 5 wifi parcare iluminat ac artificii 1 5000
+2 Sala_Polarius 200 4 wifi iluminat parcare artificii 1 6000
+3 Sala_Vega 300 2 wifi iluminat 1 3000
+4 Sala_Iris 400 5 wifi iluminat parcare artificii ac 1 8000
+5 Sala_Radius 350 2 wifi parcare 1 2000

@@ -31,6 +31,7 @@ bool anBisect(int an) {
     return (an % 4 == 0 && an % 100 != 0) || (an % 400 == 0);
 }
 
+//verific daca data e in viitor 
 bool dataValidaViitor(const Data& d) {
     time_t t = time(nullptr);
     tm* now = localtime(&t);
@@ -49,17 +50,18 @@ bool dataValidaViitor(const Data& d) {
 }
 
 bool dataCalendaristicaValida(const Data& d) {
-    int zile[] = {31,28,31,30,31,30,31,31,30,31,30,31};
+    int zile[] = {31,28,31,30,31,30,31,31,30,31,30,31};// aici am numarul de zile maxim din fiecare luna a anului
 
     if (d.getAn() < 1900) return false;
-    if (d.getLuna() < 1 || d.getLuna() > 12) return false;
+    if (d.getLuna() < 1 || d.getLuna() > 12) return false; //(1-12 luni)
 
     if (d.getLuna() == 2 && anBisect(d.getAn()))
         zile[1] = 29;
 
-    return d.getZi() >= 1 && d.getZi() <= zile[d.getLuna() - 1];
+    return d.getZi() >= 1 && d.getZi() <= zile[d.getLuna() - 1]; // zilelesa fie de la 1 la [nr max de zile pe fiecare luna]
 }
 
+//verific daca am rezervare pe o sala la o data introdusa
 bool existaRezervare(
     const vector<Rezervare>& rezervari,
     int idSala,
@@ -82,7 +84,6 @@ bool existaSala(const vector<Sala>& sali, int id) {
     return false;
 }
 
-// 🔥 FIX IMPORTANT: o singură funcție stergereSala (bool)
 
 bool stergereSala(vector<Sala>& sali, int id) {
     for (int i = 0; i < (int)sali.size(); i++) {
@@ -151,22 +152,46 @@ void citireRezervari(vector<Rezervare>& rez,
                      const vector<Sala>& sali) {
 
     ifstream fin("Rezervari.txt");
+
     if (!fin) return;
 
-    int zi, luna, an, id, salaID;
-    string nume, prenume;
-    double pret;
+    while (true) {
 
-    while (fin >> zi >> luna >> an >> id >> salaID >> nume >> prenume >> pret) {
+        int zi, luna, an;
 
-        Data d(zi, luna, an);
+        char slash;
+
+        fin >> zi >> slash >> luna >> slash >> an;
+
+        if (fin.eof()) break;
+
+        int id;
+        fin >> id;
+
+        string numeSala;
+        fin.ignore();
+        getline(fin, numeSala);
+
+        string nume;
+        getline(fin, nume);
+
+        string prenume;
+        getline(fin, prenume);
+
         Sala s;
 
-        for (const auto& x : sali)
-            if (x.getID() == salaID)
-                s = x;
+        for (const auto& sala : sali) {
+            if (sala.getDenumire() == numeSala) {
+                s = sala;
+                break;
+            }
+        }
 
-        rez.push_back(Rezervare(id, s, d, nume, prenume, pret));
+        Data d(zi, luna, an);
+
+        rez.push_back(
+            Rezervare(id, s, d, nume, prenume, s.getPretBaza())
+        );
     }
 }
 
@@ -176,17 +201,26 @@ void afisareRezervari(const vector<Rezervare>& rez) {
 }
 
 void salvareRezervari(const vector<Rezervare>& rez) {
+
     ofstream fout("Rezervari.txt");
 
     for (const auto& r : rez) {
-        fout << r.getData().getZi() << " "
-             << r.getData().getLuna() << " "
-             << r.getData().getAn() << " "
-             << r.getID() << " "
-             << r.getSala().getID() << " "
-             << r.getNume() << " "
-             << r.getPrenume() << " "
-             << r.getPretTotal() << "\n";
+
+        fout << r.getData().getZi() << "/"
+             << r.getData().getLuna() << "/"
+             << r.getData().getAn() << "\n";
+
+        fout << r.getID() << "\n";
+
+        fout << r.getSala().getDenumire() << "\n";
+
+        fout << r.getNume() << "\n";
+
+        fout << r.getPrenume() << "\n";
+
+        fout << r.getPretTotal() << "\n";
+
+        fout << "\n";
     }
 }
 
@@ -205,14 +239,24 @@ void adaugareRezervare(
 
     Data d(zi, luna, an);
 
-    if (!dataCalendaristicaValida(d)) return;
-    if (!dataValidaViitor(d)) return;
-    if (existaRezervare(rezervari, idSala, d)) return;
+    if (!dataCalendaristicaValida(d)){
+        cout<<"Data calendaristică invalidă!";
+         return;
+        }
+    if (!dataValidaViitor(d)){ 
+        cout<<"Data calendaristică trebuie să fie în viitor!";
+        return;
+        }
+    if (existaRezervare(rezervari, idSala, d)){ 
+        cout<<"Sala este deja rezervată!";
+        return;
+        }
 
     for (auto& s : sali) {
         if (s.getID() == idSala) {
             rezervari.push_back(Rezervare(idRez, s, d, nume, prenume, s.getPretBaza()));
             salvareRezervari(rezervari);
+            cout << "Rezervare adaugata!\n";
             return;
         }
     }
@@ -230,10 +274,11 @@ void stergereRezervare(vector<Rezervare>& rez, int id) {
 // ================= INCASARI =================
 
 double incasariTotale(const vector<Rezervare>& rez) {
-    double s = 0;
-    for (const auto& r : rez)
-        s += r.getPretTotal();
-    return s;
+
+    return acumuleaza(rez,
+        [](const Rezervare& r) {
+            return r.getPretTotal();
+        });
 }
 
 int genereazaID(const vector<Rezervare>& rez) {

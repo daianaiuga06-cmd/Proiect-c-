@@ -25,3 +25,9 @@ ostream& operator<<(ostream& out, const Data& d) {
     out << d.zi << "/" << d.luna << "/" << d.an;
     return out;
 }
+istream& operator>>(istream& in, Data& d) {
+
+    in >> d.zi >> d.luna >> d.an;
+
+    return in;
+}
