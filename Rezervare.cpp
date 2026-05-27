@@ -1,34 +1,36 @@
 #include "Rezervare.h"
+using namespace std;
+Rezervare::Rezervare() : id(0), pret(0) {}
 
-Rezervare::Rezervare() {
-    idRez = 0;
-    numeClient = "";
-    prenumeClient = "";
-    pretTotal = 0;
-}
+Rezervare::Rezervare(int i, const Sala& s, const Data& d,
+                     string n, string p, double pr)
+    : id(i), sala(s), data(d), nume(n), prenume(p), pret(pr) {}
 
-Rezervare::Rezervare(int id, Sala s, Data d, string nume, string prenume, double p) {
-    idRez = id;
-    sala = s;
-    data = d;
-    numeClient = nume;
-    prenumeClient = prenume;
-    pretTotal = p;
-}
-
-int Rezervare::getID() const { return idRez; }
-Sala Rezervare::getSala() const { return sala; }
-Data Rezervare::getData() const { return data; }
-string Rezervare::getNumeClient() const { return numeClient; }
-string Rezervare::getPrenumeClient() const { return prenumeClient; }
-double Rezervare::getPretTotal() const { return pretTotal; }
+int Rezervare::getID() const {
+     return id; 
+    }
+Sala Rezervare::getSala() const {
+     return sala; 
+    }
+Data Rezervare::getData() const {
+     return data; 
+    }
+string Rezervare::getNume() const {
+     return nume; 
+    }
+string Rezervare::getPrenume() const {
+     return prenume; 
+    }
+double Rezervare::getPretTotal() const {
+     return pret; 
+    }
 
 ostream& operator<<(ostream& out, const Rezervare& r) {
-    out << r.idRez << " "
+    out << r.id << " "
         << r.sala.getDenumire() << " "
-        << r.numeClient << " "
-        << r.prenumeClient << " "
+        << r.nume << " "
+        << r.prenume << " "
         << r.data << " "
-        << r.pretTotal;
+        << r.pret;
     return out;
 }

@@ -1,29 +1,30 @@
 #pragma once
-#include <string>
+
 #include <iostream>
+#include <string>
 #include "Sala.h"
 #include "Data.h"
 
 using namespace std;
 
-class Rezervare {// Clasa care reprezinta o rezervare facuta pentru o sala
+class Rezervare {
 private:
-    int idRez;
+    int id;
     Sala sala;
     Data data;
-    string numeClient;
-    string prenumeClient;
-    double pretTotal;
+    string nume;
+    string prenume;
+    double pret;
 
 public:
     Rezervare();//constructor implicit
-    Rezervare(int, Sala, Data, string, string, double);
+    Rezervare(int, const Sala&, const Data&, string, string, double);
 
     int getID() const;
     Sala getSala() const;
     Data getData() const;
-    string getNumeClient() const;
-    string getPrenumeClient() const;
+    string getNume() const;
+    string getPrenume() const;
     double getPretTotal() const;
 
     friend ostream& operator<<(ostream&, const Rezervare&);

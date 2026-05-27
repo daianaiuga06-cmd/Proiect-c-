@@ -1,149 +1,190 @@
-#include "Sala.h"
-#include "Rezervare.h"
 #include "Utilitati.h"
-
 #include <iostream>
-#include <vector>
 #include <string>
+#include <vector>
 
 using namespace std;
 
-/*
-    Aplicatia functioneaza pe baza de comenzi din linia de comanda (CLI)
-    argv[1] reprezinta comanda principala
-    argv[2...] reprezinta parametrii aferenti fiecarei comenzi
-*/
+string toLowerStr(string s) {
+    for (char &c : s) c = tolower(c);
+    return s;
+}
+
+bool safeStoi(const string &s, int &out) {
+    try {
+        out = stoi(s);
+        return true;
+    } catch (...) {
+        return false;
+    }
+}
+
+bool safeStod(const string &s, double &out) {
+    try {
+        out = stod(s);
+        return true;
+    } catch (...) {
+        return false;
+    }
+}
 
 int main(int argc, char* argv[]) {
 
     vector<Sala> sali;
     vector<Rezervare> rezervari;
 
-    // incarcam datele existente din fisiere la pornirea aplicatiei
     citireSali(sali);
-    citireRezervari(rezervari);
+    citireRezervari(rezervari, sali);
 
-    // verificam daca a fost introdusa o comanda valida
     if (argc < 2) {
         cout << "Comanda invalida!\n";
         return 1;
     }
 
-    // extragem comanda principala
-    string comanda = argv[1];
+    string cmd = argv[1];
 
-    // 1. afisarea tuturor salilor existente
-    if (comanda == "vizualizare_sali") {
+    // ================= VIZUALIZARE =================
+
+    if (cmd == "vizualizare_sali") {
         afisareSali(sali);
     }
 
-    // 2. afisarea rezervarilor existente
-    else if (comanda == "vizualizare_rezervari") {
+    else if (cmd == "vizualizare_rezervari") {
         afisareRezervari(rezervari);
     }
 
-    // 3. filtrarea salilor disponibile (cele care pot fi rezervate)
-    else if (comanda == "vizualizare_disponibilitate") {
+    else if (cmd == "vizualizare_disponibilitate") {
         afisareDisponibile(sali);
     }
 
-    // 4. adaugarea unei noi sali in sistem
-    // ID-ul este generat automat pentru a evita duplicarea
-    else if (comanda == "adaugare_sala") {
+    // ================= ADAUGARE SALA =================
 
-        if (argc != 9) {
-            cout << "Numar gresit de argumente!\n";
+    else if (cmd == "adaugare_sala") {
+
+        if (argc < 9) {
+            cout << "Utilizare:\n";
+            cout << "./app adaugare_sala <ID> <denumire> <capacitate> <facilitati...> <disponibilitate> <pret>\n";
             return 1;
         }
 
-        int idNou = 1;
+        int id, cap;
+        double pret;
 
-        // cautam cel mai mare ID existent pentru a genera unul nou unic
-        for (auto s : sali)
-            if (s.getID() >= idNou)
-                idNou = s.getID() + 1;
+        if (!safeStoi(argv[2], id) ||
+            !safeStoi(argv[4], cap) ||
+            !safeStod(argv[argc - 1], pret)) {
+            cout << "Date invalide!\n";
+            return 1;
+        }
 
-        string denumire = argv[2];
-        int capacitate = stoi(argv[3]);
-        string f1 = argv[4];
-        string f2 = argv[5];
-        string f3 = argv[6];
-        bool disp = (string(argv[7]) == "da");
-        double pret = stod(argv[8]);
+        string den = argv[3];
 
-        sali.push_back(Sala(idNou, denumire, capacitate, f1, f2, f3, disp, pret));
+        string dispStr = toLowerStr(argv[argc - 2]);
+        bool disp = (dispStr == "da");
+
+        vector<string> facilitati;
+
+        for (int i = 5; i < argc - 2; i++) {
+            facilitati.push_back(argv[i]);
+        }
+
+        sali.push_back(Sala(id, den, cap, facilitati, disp, pret));
+
         salvareSali(sali);
-
         cout << "Sala adaugata!\n";
     }
 
-    // 5. stergerea unei sali dupa ID
-    else if (comanda == "stergere_sala") {
+    // ================= STERGERE SALA =================
 
-        if (argc != 3) {
-            cout << "Numar gresit de argumente!\n";
+    else if (cmd == "stergere_sala") {
+
+        if (argc < 3) {
+            cout << "Utilizare: ./app stergere_sala <ID>\n";
             return 1;
         }
 
-        int id = stoi(argv[2]);
-        stergereSala(sali, id);
-        salvareSali(sali);
+        int id;
 
-        cout << "Sala stearsa!\n";
+        if (!safeStoi(argv[2], id)) {
+            cout << "ID invalid!\n";
+            return 1;
+        }
+
+        if (stergereSala(sali, id)) {
+            salvareSali(sali);
+            cout << "Sala stearsa!\n";
+        }
+        else {
+            cout << "Sala nu exista!\n";
+        }
     }
 
-    // 6. modificarea datelor unei sali (capacitate sau facilitati)
-    else if (comanda == "modificare_date") {
+    // ================= MODIFICARE DATE =================
 
-        if (argc < 5) {
-            cout << "Numar gresit de argumente!\n";
+    else if (cmd == "modificare_date") {
+
+        if (argc < 4) {
+            cout << "Utilizare:<ID> <capacitate/facilitati/disponibilitate> <noua_capacitate/facilitati/disponibilitate>\n";
             return 1;
         }
 
-        int id = stoi(argv[2]);
+        int id;
+        if (!safeStoi(argv[2], id)) {
+            cout << "ID invalid!\n";
+            return 1;
+        }
+
         string tip = argv[3];
 
-        for (auto& s : sali) {
+        for (auto &s : sali) {
+
             if (s.getID() == id) {
 
-                // modificare capacitate
                 if (tip == "capacitate") {
-                    int capNoua = stoi(argv[4]);
 
-                    s = Sala(
-                        s.getID(),
-                        s.getDenumire(),
-                        capNoua,
-                        s.getF1(),
-                        s.getF2(),
-                        s.getF3(),
-                        s.getDisponibilitate(),
-                        s.getPretBaza()
-                    );
-                }
-
-                // modificare facilitati (3 valori simultan)
-                else if (tip == "facilitati") {
-                    if (argc != 7) {
-                        cout << "Trebuie 3 facilitati noi!\n";
+                    int cap;
+                    if (!safeStoi(argv[4], cap)) {
+                        cout << "Capacitate invalida!\n";
                         return 1;
                     }
 
-                    s = Sala(
-                        s.getID(),
-                        s.getDenumire(),
-                        s.getCapacitate(),
-                        argv[4],
-                        argv[5],
-                        argv[6],
-                        s.getDisponibilitate(),
-                        s.getPretBaza()
-                    );
+                    s = Sala(s.getID(), s.getDenumire(), cap,
+                             s.getFacilitati(), s.getDisponibilitate(), s.getPretBaza());
                 }
 
-                // salvam modificarile in fisier
+                else if (tip == "facilitati") {
+
+                    vector<string> facilitati;
+                    for (int i = 4; i < argc; i++) {
+                    facilitati.push_back(argv[i]);
+                    }
+
+                    s = Sala(s.getID(), s.getDenumire(), s.getCapacitate(),
+                             facilitati, s.getDisponibilitate(), s.getPretBaza());
+                }
+
+                else if (tip == "disponibilitate") {
+
+                    if (argc < 5) {
+                        cout << "Utilizare: <ID> disponibilitate <da/nu>\n";
+                        return 1;
+                    }
+
+                    string val = toLowerStr(argv[4]);
+                    bool disp;
+
+                    if (val == "da") disp = true;
+                    else if (val == "nu") disp = false;
+                    else {
+                        cout << "Valoare invalida!\n";
+                        return 1;
+                    }
+
+                    s.setDisponibilitate(disp);
+                }
+
                 salvareSali(sali);
-                cout << "Date modificate!\n";
+                cout << "Sala modificata!\n";
                 return 0;
             }
         }
@@ -151,38 +192,72 @@ int main(int argc, char* argv[]) {
         cout << "Sala nu exista!\n";
     }
 
-    // 7. actualizarea disponibilitatii unei sali
-    else if (comanda == "actualizare_disponibilitate") {
+    // ================= ADAUGARE REZERVARE =================
 
-        if (argc != 4) {
-            cout << "Numar gresit de argumente!\n";
+    else if (cmd == "adaugare_rezervare") {
+
+        int idRez, idSala, zi, luna, an;
+
+        if (argc < 9) {
+            cout << "Utilizare!\n";
             return 1;
         }
 
-        int id = stoi(argv[2]);
-        bool disp = (string(argv[3]) == "da");
-
-        for (auto& s : sali) {
-            if (s.getID() == id) {
-
-                s.setDisponibilitate(disp);
-                salvareSali(sali);
-
-                cout << "Disponibilitate actualizata!\n";
-                return 0;
-            }
+        if (!safeStoi(argv[2], idRez) ||
+            !safeStoi(argv[3], idSala) ||
+            !safeStoi(argv[4], zi) ||
+            !safeStoi(argv[5], luna) ||
+            !safeStoi(argv[6], an)) {
+            cout << "Date invalide!\n";
+            return 1;
         }
 
-        cout << "Sala nu exista!\n";
+        adaugareRezervare(rezervari, sali, idRez, idSala, zi, luna, an, argv[7], argv[8]);
     }
 
-    // 8. raport statistic al rezervarilor (numar + suma incasata)
-    else if (comanda == "raport_rezervari") {
-        raportRezervari(rezervari);
+    // ================= STERGERE REZERVARE =================
+
+    else if (cmd == "stergere_rezervare") {
+
+        if (argc < 3) {
+            cout << "Utilizare: ./app stergere_rezervare <ID>\n";
+            return 1;
+        }
+
+        int id;
+
+        if (!safeStoi(argv[2], id)) {
+            cout << "ID invalid!\n";
+            return 1;
+        }
+
+        stergereRezervare(rezervari, id);
+        salvareRezervari(rezervari);
+
+        cout << "Rezervare stearsa!\n";
     }
+
+    // ================= INCASARI =================
+
+    else if (cmd == "incasari_totale") {
+
+        cout << "Total incasari: " << incasariTotale(rezervari) << " lei\n";
+    }
+
+    // ================= COMANDA NECUNOSCUTA =================
 
     else {
         cout << "Comanda necunoscuta!\n";
+        cout << "Comenzi disponibile:\n";
+        cout << "vizualizare_sali\n";
+        cout << "vizualizare_rezervari\n";
+        cout << "vizualizare_disponibilitate\n";
+        cout << "adaugare_sala\n";
+        cout << "stergere_sala\n";
+        cout << "stergere_rezervare\n";
+        cout << "modificare_date\n";
+        cout << "actualizare_disponibilitate\n";
+        cout << "incasari_totale\n";
     }
 
     return 0;

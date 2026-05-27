@@ -1,22 +1,44 @@
 #pragma once
+
 #include <vector>
+#include <string>
 #include "Sala.h"
 #include "Rezervare.h"
+#include "Data.h"
 
 using namespace std;
 
-template <typename T>
-void raportRezervari(const vector<T>& );
-
+// SALI
 void citireSali(vector<Sala>&);
 void salvareSali(const vector<Sala>&);
-
 void afisareSali(const vector<Sala>&);
-void stergereSala(vector<Sala>&, int);
-
-void cautareSali(const vector<Sala>&, int);
+bool stergereSala(vector<Sala>&, int);
 void afisareDisponibile(const vector<Sala>&);
 
-void citireRezervari(vector<Rezervare>&);
+// REZERVARI
+void citireRezervari(vector<Rezervare>&, const vector<Sala>&);
 void salvareRezervari(const vector<Rezervare>&);
 void afisareRezervari(const vector<Rezervare>&);
+
+void adaugareRezervare(
+    vector<Rezervare>&,
+    vector<Sala>&,
+    int,int,int,int,int,
+    const string&,
+    const string&
+);
+
+void stergereRezervare(vector<Rezervare>&, int);
+
+// LOGICA
+double incasariTotale(const vector<Rezervare>&);
+int genereazaID(const vector<Rezervare>&);
+
+// VALIDARI
+bool numarPozitiv(int);
+bool numarPozitivDouble(double);
+bool textValid(const string&);
+bool dataCalendaristicaValida(const Data&);
+bool dataValidaViitor(const Data&);
+bool existaRezervare(const vector<Rezervare>&, int, const Data&);
+bool existaSala(const vector<Sala>&, int);
