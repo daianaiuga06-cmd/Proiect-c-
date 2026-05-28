@@ -1,4 +1,4 @@
-#include "Data.h"
+#include "../H/Data.h"
 using namespace std;
 
 Data::Data() : zi(0), luna(0), an(0) {}
@@ -18,7 +18,7 @@ int Data::getAn() const {
 bool Data::esteValida() const {
     return (zi >= 1 && zi <= 31 &&
             luna >= 1 && luna <= 12 &&
-            an >= 2020);
+            an >= 2026);
 }
 
 ostream& operator<<(ostream& out, const Data& d) {

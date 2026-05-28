@@ -1,4 +1,4 @@
-#include "Utilitati.h"
+#include "Shared/H/Utilitati.h"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -61,38 +61,81 @@ int main(int argc, char* argv[]) {
 
     else if (cmd == "adaugare_sala") {
 
-        if (argc < 9) {
-            cout << "Utilizare:\n";
-            cout << "./app adaugare_sala <ID> <denumire> <capacitate> <facilitati...> <disponibilitate> <pret>\n";
-            return 1;
-        }
-
-        int id, cap;
-        double pret;
-
-        if (!safeStoi(argv[2], id) ||
-            !safeStoi(argv[4], cap) ||
-            !safeStod(argv[argc - 1], pret)) {
-            cout << "Date invalide!\n";
-            return 1;
-        }
-
-        string den = argv[3];
-
-        string dispStr = toLowerStr(argv[argc - 2]);
-        bool disp = (dispStr == "da");
-
-        vector<string> facilitati;
-
-        for (int i = 5; i < argc - 2; i++) {
-            facilitati.push_back(argv[i]);
-        }
-
-        sali.push_back(Sala(id, den, cap, facilitati, disp, pret));
-
-        salvareSali(sali);
-        cout << "Sala adaugata!\n";
+    if (argc < 9) {
+        cout << "Utilizare:\n";
+        cout << "./app adaugare_sala <ID> <denumire> <capacitate> <facilitati...> <disponibilitate> <pret>\n";
+        return 1;
     }
+
+    int id, cap;
+    double pret;
+
+    // CONVERSII 
+    if (!safeStoi(argv[2], id) ||
+        !safeStoi(argv[4], cap) ||
+        !safeStod(argv[argc - 1], pret)) {
+        cout << "Date invalide!\n";
+        return 1;
+    }
+
+    string den = argv[3];
+
+    string dispStr = toLowerStr(argv[argc - 2]);
+    bool disp;
+
+    if (dispStr == "da") disp = true;
+    else if (dispStr == "nu") disp = false;
+    else {
+        cout << "Disponibilitate invalida (foloseste da/nu)!\n";
+        return 1;
+    }
+
+    // VALIDARI LOGICE 
+
+    if (!numarPozitiv(id)) {
+        cout << "ID invalid!\n";
+        return 1;
+    }
+
+    if (!numarPozitiv(cap)) {
+        cout << "Capacitatea trebuie sa fie > 0!\n";
+        return 1;
+    }
+
+    if (!numarPozitivDouble(pret)) {
+        cout << "Pret invalid!\n";
+        return 1;
+    }
+
+    if (!textValid(den)) {
+        cout << "Denumire invalida!\n";
+        return 1;
+    }
+
+    if (existaSala(sali, id)) {
+        cout << "Sala cu acest ID exista deja!\n";
+        return 1;
+    }
+
+    // FACILITATI 
+    vector<string> facilitati;
+
+    for (int i = 5; i < argc - 2; i++) {
+        if (!textValid(argv[i])) {
+            cout << "Facilitati invalide!\n";
+            return 1;
+        }
+        facilitati.push_back(argv[i]);
+    }
+
+    // ADAUGARE 
+    sali.push_back(Sala(id, den, cap, facilitati, disp, pret));
+
+    salvareSali(sali);
+
+    cout << "Sala adaugata cu succes!\n";
+    return 0;
+}
 
     // ================= STERGERE SALA =================
 
@@ -196,27 +239,71 @@ int main(int argc, char* argv[]) {
 
     else if (cmd == "adaugare_rezervare") {
 
-        int idRez, idSala, zi, luna, an;
+    int idRez, idSala, zi, luna, an;
 
-        if (argc < 9) {
-            cout << "Utilizare!\n";
-            return 1;
-        }
-
-        if (!safeStoi(argv[2], idRez) ||
-            !safeStoi(argv[3], idSala) ||
-            !safeStoi(argv[4], zi) ||
-            !safeStoi(argv[5], luna) ||
-            !safeStoi(argv[6], an)) {
-            cout << "Date invalide!\n";
-            return 1;
-        }
-
-        adaugareRezervare(rezervari, sali, idRez, idSala, zi, luna, an, argv[7], argv[8]);
-        cout<<"Rezervare adaugată!";
+    if (argc < 9) {
+        cout << "Utilizare: <IDrez> <IDSala> <zi> <luna> <an> <numeClient> <prenumeClient>\n";
+        return 1;
     }
 
-    // ================= STERGERE REZERVARE =================
+    // CONVERSII 
+    if (!safeStoi(argv[2], idRez) ||
+        !safeStoi(argv[3], idSala) ||
+        !safeStoi(argv[4], zi) ||
+        !safeStoi(argv[5], luna) ||
+        !safeStoi(argv[6], an)) {
+        cout << "Date invalide!\n";
+        return 1;
+    }
+
+    string nume = argv[7];
+    string prenume = argv[8];
+
+    // VALIDARI NUMERICE 
+    if (!numarPozitiv(idRez)) {
+        cout << "ID rezervare invalid!\n";
+        return 1;
+    }
+
+    if (!numarPozitiv(idSala)) {
+        cout << "ID sala invalid!\n";
+        return 1;
+    }
+
+    // VALIDARI TEXT 
+    if (!textValid(nume) || !textValid(prenume)) {
+        cout << "Nume client invalid!\n";
+        return 1;
+    }
+
+    // VALIDARE SALA EXISTENTA 
+    if (!existaSala(sali, idSala)) {
+        cout << "Sala nu exista!\n";
+        return 1;
+    }
+
+    // VALIDARE DATA 
+    Data d(zi, luna, an);
+
+    if (!dataCalendaristicaValida(d)) {
+        cout << "Data calendaristica invalida!\n";
+        return 1;
+    }
+
+    if (!dataValidaViitor(d)) {
+        cout << "Data trebuie sa fie in viitor!\n";
+        return 1;
+    }
+
+    // ADAUGARE 
+    if (adaugareRezervare(rezervari, sali, idRez, idSala, zi, luna, an, nume, prenume)) {
+    cout << "Rezervare adaugata!\n";
+    } else {
+    cout << "Rezervarea NU a fost adaugata!\n";
+    }
+}
+
+    // ==========STERGERE REZERVARE============ 
 
     else if (cmd == "stergere_rezervare") {
 
@@ -309,6 +396,7 @@ int main(int argc, char* argv[]) {
         cout << "vizualizare_rezervari\n";
         cout << "vizualizare_disponibilitate\n";
         cout << "adaugare_sala\n";
+        cout << "adaugare_rezervare\n";
         cout << "stergere_sala\n";
         cout << "stergere_rezervare\n";
         cout << "modificare_date\n";

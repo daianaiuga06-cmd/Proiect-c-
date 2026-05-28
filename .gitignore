@@ -1,0 +1,21 @@
+# executabile
+*.exe
+*.out
+
+# fisiere obiect
+*.o
+*.obj
+
+# fisiere temporare
+*.tmp
+*.log
+
+# foldere build
+build/
+bin/
+
+# VS Code
+.vscode/
+
+# fisiere generate de compilator
+*.gch

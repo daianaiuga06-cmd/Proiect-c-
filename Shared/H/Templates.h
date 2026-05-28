@@ -4,7 +4,7 @@
 using namespace std;
 //functiile template
 //sunt puse separat ca sa fie mai usor de hestionat si gasit
-template <typename T, typename Predicate>
+template <typename T, typename Predicate> //functie pentru filtrare in functie de disponibilitate
 vector<T> filtreaza(const vector<T>& v, Predicate p) {
     vector<T> rezultat;
 
@@ -15,7 +15,7 @@ vector<T> filtreaza(const vector<T>& v, Predicate p) {
     return rezultat;
 }
 
-template <typename T, typename Func>
+template <typename T, typename Func> //functie pentru incasari_totale , face suma preturilor din rezervari
 double acumuleaza(const vector<T>& v, Func f) {
     double suma = 0;
 

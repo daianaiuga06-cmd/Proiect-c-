@@ -1,10 +1,10 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "Sala.h"
-#include "Rezervare.h"
-#include "Data.h"
-#include "Utilitati2.h"
+#include "Shared/H/Sala.h"
+#include "Shared/H/Rezervare.h"
+#include "Shared/H/Data.h"
+#include "Shared/H/Utilitati2.h"
 #include <fstream>
 
 using namespace std;
