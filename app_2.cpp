@@ -11,7 +11,7 @@ using namespace std;
 
 int main(int argc,char* argv[])
 {
-    if (argc<2) {
+    if (argc<2) {  //cazul in care nu e introdusa niciun argument
         cout << "Nu exista comanda!\n";
         return 0;
     }
@@ -33,7 +33,7 @@ int main(int argc,char* argv[])
             return 0;
         }
 
-        int capacitate=stoi(argv[2]);
+        int capacitate=stoi(argv[2]); //se transfortma din string in int
         cautareDupaCapacitate(capacitate);
     }
 
@@ -51,22 +51,26 @@ int main(int argc,char* argv[])
 
     else if(comanda=="rezervare_directa"){
 
-    if (argc<9) {
-        cout<<"Format: rezervare_directa <numeSala> <capacitate> <zi> <luna> <an> <facilitate> <nume> <prenume>\n";
+    if(argc < 9){
+        cout << "Format: rezervare_directa <sala> <cap> <zi> <luna> <an> <facilitati...> <nume> <prenume>\n";
         return 0;
     }
 
-    string numeSala=argv[2];
-    int cap=stoi(argv[3]);
-    int zi=stoi(argv[4]);
-    int luna=stoi(argv[5]);
-    int an=stoi(argv[6]);
-    string fac=argv[7];
+    string numeSala = argv[2];
+    int cap = stoi(argv[3]);
+    int zi = stoi(argv[4]);
+    int luna = stoi(argv[5]);
+    int an = stoi(argv[6]);
 
-    string client="";
-     for (int i=8; i<argc; i++) {
-        client += string(argv[i]);
-        if (i<argc-1) client+= " ";
+    // CLIENT = ultimele 2 cuvinte (OBLIGATORIU 2 CUVINTE)
+    string client = string(argv[argc-2]) + " " + string(argv[argc-1]);
+
+    // FACILITĂȚI = tot între argv[7] și înainte de client
+    string fac = "";
+
+    for(int i = 7; i < argc - 2; i++){
+        fac += argv[i];
+        if(i < argc - 3) fac += " ";
     }
 
     rezervareSala(numeSala, cap, zi, luna, an, fac, client);
@@ -74,26 +78,29 @@ int main(int argc,char* argv[])
 
     // prerezervare
 
-    else if(comanda=="rezervare_provizorie") {
+   else if(comanda=="rezervare_provizorie"){
 
-        if (argc<9) {
-            cout<<"Format corect: rezervare_provizorie <numeSala> <capacitate> <zi> <luna> <an> <facilitate> <numeClient>\n";
-            return 0;
-        }
+    if(argc < 9){
+        cout << "Format: rezervare_provizorie <sala> <cap> <zi> <luna> <an> <facilitati...> <nume> <prenume>\n";
+        return 0;
+    }
 
-         string numeSala=argv[2];
-         int cap=stoi(argv[3]);
-         int zi=stoi(argv[4]);
-         int luna=stoi(argv[5]);
-         int an=stoi(argv[6]);
-         string fac=argv[7];
+    string numeSala = argv[2];
+    int cap = stoi(argv[3]);
+    int zi = stoi(argv[4]);
+    int luna = stoi(argv[5]);
+    int an = stoi(argv[6]);
 
-        string client= "";
-         for (int i=8; i<argc; i++) {
-           client += string(argv[i]);
-           if (i<argc-1) client+= " ";
-      }
-      preRezervare(numeSala, cap, zi, luna, an, fac, client);
+    string client = string(argv[argc-2]) + " " + string(argv[argc-1]);
+
+    string fac = "";
+   //pt a putea citi mai multe facilitati
+    for(int i = 7; i < argc - 2; i++){
+        fac += argv[i];
+        if(i < argc - 3) fac += " ";
+    }
+
+    preRezervare(numeSala, cap, zi, luna, an, fac, client);
 }
 
     else if (comanda=="afisare_rezervari_provizorii") {
@@ -108,9 +115,9 @@ int main(int argc,char* argv[])
         }
 
         int id=stoi(argv[2]);
-        string client=argv[3];
+        string numeClient = string(argv[argc-2]) + " " + string(argv[argc-1]);
 
-        confirmaPreRezervare(id,client);
+        confirmaPreRezervare(id,numeClient);
     }
 
     else if (comanda=="stergere_rezervare_provizorie") {
@@ -121,9 +128,9 @@ int main(int argc,char* argv[])
         }
 
         int id=stoi(argv[2]);
-        string client=argv[3];
+        string numeClient = string(argv[argc-2]) + " " + string(argv[argc-1]);
 
-        stergerePreRezervare(id, client);
+        stergerePreRezervare(id, numeClient);
     }
 
     // rezervari personale
@@ -136,7 +143,7 @@ int main(int argc,char* argv[])
         }
 
        string numeClient;
-       if (argc>=4){
+       if (argc>=4){  //pentru a afisa nume si prenume
                numeClient=string(argv[2])+ " " +string(argv[3]);
     } else{
     numeClient = argv[2];
@@ -159,9 +166,9 @@ int main(int argc,char* argv[])
         int luna=stoi(argv[3]);
         int an=stoi(argv[4]);
         int id=stoi(argv[5]);
-        string client=argv[6];
+        string numeClient = string(argv[argc-2]) + " " + string(argv[argc-1]);
 
-        anulareRezervari(zi, luna, an, id, client);
+        anulareRezervari(zi, luna, an, id, numeClient);
     }
 
     // modificare data
@@ -177,7 +184,7 @@ int main(int argc,char* argv[])
         string client = argv[3];
 
         int ziV=stoi(argv[4]);
-        int lunaV=stoi(argv[5]);
+        int lunaV=stoi(argv[5]); //tot ce este de tip int este convertit in string
         int anV=stoi(argv[6]);
 
         int ziN=stoi(argv[7]);

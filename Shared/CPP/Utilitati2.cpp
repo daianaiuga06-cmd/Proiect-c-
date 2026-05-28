@@ -1,4 +1,4 @@
-#include "../H/Utilitati2.h"
+#include"../H/Utilitati2.h"
 #include<fstream>
 #include<ctime>
 #include<map>
@@ -21,7 +21,7 @@ bool validareFacilitate(string s){
 }
 
 bool validareData(int zi,int luna,int an){
-time_t t=time(0);
+time_t t=time(0);  //cu ctime calculam data din ziua respectiva(astazi)
 tm*acum=localtime(&t);
 
 int zc=acum->tm_mday;
@@ -29,7 +29,7 @@ int lc=acum->tm_mon+1;
 int ac=acum->tm_year+1900;
 
      if(an<ac)return false;
-
+    //daca e acelasi an se verifica si luna si zi
         if(an==ac){
           if(luna<lc)return false;
              if(luna==lc){
@@ -45,16 +45,13 @@ int ac=acum->tm_year+1900;
 
 //CITIRE SALI
 
-vector<Sala> citireSali() {
-    vector<Sala> sali;
-    ifstream fin("Sali.txt");
-
-    if (!fin.is_open()) {
-        return sali;
-    }
+vector<Sala>citireSali(){
+vector<Sala>sali;
+  ifstream fin("Shared/TXT/Sali.txt"); //se deschide fisierul
+   if(!fin)return sali;
 
     int nr;
-    fin>>nr;
+    fin>>nr;//numarul de sali din fisier
 
         for(int i=0;i<nr;i++){
             int id,cap,nrFac;
@@ -72,7 +69,7 @@ vector<Sala> citireSali() {
         }
 
           fin>>disp>>pret;
-        sali.push_back(Sala(id,den,cap,fac,disp,pret));
+        sali.push_back(Sala(id,den,cap,fac,disp,pret)); 
     }
         return sali;
     }
@@ -104,11 +101,10 @@ void afisariSaliDisponibile(){
 //CAUTARI
 
 void cautareDupaCapacitate(int c){
-         vector<Sala>s=citireSali();
-         cout<<"\n --- CAUTARE DUPA CAPACITATE ---\n";
+         vector<Sala>s=citireSali(); 
          bool gasit=false;
         for(auto&x:s){
-         if(x.getCapacitate()==c){
+         if(x.getCapacitate()==c){ //se caut dupa o capacitate anume
            cout<<x<<endl;
            gasit=true;
         }
@@ -118,7 +114,6 @@ void cautareDupaCapacitate(int c){
 }
 void cautareDupaFacilitati(string f){
         vector<Sala>s=citireSali();
-        cout<<"\n --- CAUTARE DUPA FACILITATI ---\n";
         bool gasit=false;
 
               for(auto&x:s){
@@ -138,6 +133,7 @@ void cautareDupaFacilitati(string f){
 
 void preRezervare(string numeSala,int cap,int zi,int luna,int an,string fac,string client){
 
+    
          if(!validareCapacitate(cap)){
              cout<<"Capacitate invalida!\n";
                return;
@@ -162,6 +158,7 @@ vector<Sala>s=citireSali();
 Sala gasita;
 bool exista=false;
 
+//se fac validari pentru datele pre-rezervarii
         for(auto&x:s){
           if(x.getDenumire()==numeSala){
            gasita=x;
@@ -200,7 +197,7 @@ bool exista=false;
 
        fin.close();
 
-          ofstream fout("Shared/TXT/preRezervari.txt",ios::app);
+          ofstream fout("Shared/TXT/preRezervari.txt",ios::app); //se inchide fisieru si e adaugat
 
      fout<<to_string(zi)<<"/"<<to_string(luna)<<"/"<<to_string(an)<<" "<<lastId+1<<" "<<gasita.getDenumire()<<" "<<client<<"\n";
 
@@ -211,7 +208,7 @@ bool exista=false;
 
 void confirmaPreRezervare(int id,string client){
 ifstream fin("Shared/TXT/preRezervari.txt");
-ofstream fout("temp.txt");
+ofstream fout("Shared/TXT/temp.txt");
 
 int idF,zi,luna,an;
 string den,cl;
@@ -220,7 +217,7 @@ bool gasit=false;
 
      while(fin>>idF>>den>>cl>>zi>>luna>>an>>pret){
         if(idF==id&&cl==client){
-        ofstream r("Shared/TXT/Rezervari.txt",ios::app);
+        ofstream r("Shared/TXT/Rezervari.txt",ios::app); //cand se confirma rezervare devine automat finala
         r<<idF<<" "<<den<<" "<<cl<<" "<<zi<<" "<<luna<<" "<<an<<" "<<pret<<"\n";
         r.close();
          gasit=true;
@@ -233,7 +230,7 @@ bool gasit=false;
     fout.close();
     
     remove("Shared/TXT/preRezervari.txt");
-    rename("temp.txt","Shared/TXT/preRezervari.txt");
+    rename("Shared/TXT/temp.txt","Shared/TXT/preRezervari.txt");
     if(gasit)cout<<"Rezervare confirmata!\n";
     else cout<<"Nu exista!\n";
 }
@@ -301,7 +298,7 @@ void rezervareSala(string numeSala,int cap,int zi,int luna,int an,string fac,str
 void anulareRezervari(int zi,int luna,int an,int idCautat,string numeClientCautat)
 {
     ifstream fin("Shared/TXT/Rezervari.txt");
-    ofstream fout("temp.txt");
+    ofstream fout("Shared/TXT/temp.txt");
 
     if(!fin){
         cout<<"Fisierul Rezervari.txt nu exista!\n";
@@ -332,9 +329,9 @@ void anulareRezervari(int zi,int luna,int an,int idCautat,string numeClientCauta
     fout.close();
 
     remove("Shared/TXT/Rezervari.txt");
-    rename("temp.txt","Shared/TXT/Rezervari.txt");
+    rename("Shared/TXT/temp.txt","Shared/TXT/Rezervari.txt");
 
-    if(!gasit)
+    if(gasit)
         cout<<"REZERVARE ANULATA CU SUCCES!\n";
     else
         cout<<"NU S-A GASIT REZERVAREA!\n";
@@ -344,7 +341,7 @@ void anulareRezervari(int zi,int luna,int an,int idCautat,string numeClientCauta
 
 void stergerePreRezervare(int id,string client){
 ifstream fin("Shared/TXT/preRezervari.txt");
-ofstream temp("temp.txt");
+ofstream temp("Shared/TXT/temp.txt");
         int idF,zi,luna,an;
         string den,cl;
         double pret;
@@ -362,7 +359,7 @@ ofstream temp("temp.txt");
           temp.close();
 
             remove("Shared/TXT/preRezervari.txt");
-            rename("temp.txt","Shared/TXT/preRezervari.txt");
+            rename("Shared/TXT/temp.txt","Shared/TXT/preRezervari.txt");
 
             if(!gasit)cout<<"REZERVAREA PROVIZORIE A FOST STEARSA!\n";
             else cout<<"Nu exista!\n";
@@ -402,7 +399,6 @@ ofstream temp("temp.txt");
 }
 
 //REZERVARI PERSONALE
-
 void vizualizareRezervariPersonale(string client){
 ifstream fin("Shared/TXT/Rezervari.txt");
   cout<<"\n --- AFISARE REZERVARI PERSONALE ---\n";
@@ -423,13 +419,13 @@ ifstream fin("Shared/TXT/Rezervari.txt");
 
 void modificareData(int id,string client,int z1,int l1,int a1,int z2,int l2,int a2){
 ifstream fin("Shared/TXT/Rezervari.txt");
-ofstream fout("temp.txt");
+ofstream fout("Shared/TXT/temp.txt");
 
 string data,sala,n1,n2;
 int idF;
 bool gasit=false;
 
-    string vechi=to_string(z1)+"/"+to_string(l1)+"/"+to_string(a1);
+    string vechi=to_string(z1)+"/"+to_string(l1)+"/"+to_string(a1); //se transforma totul in string
     string nou=to_string(z2)+"/"+to_string(l2)+"/"+to_string(a2);
 
        while(fin>>data>>idF>>sala>>n1>>n2){
@@ -444,7 +440,7 @@ fin.close();
 fout.close();
 
 remove("Shared/TXT/Rezervari.txt");
-rename("temp.txt","Shared/TXT/Rezervari.txt");
+rename("Shared/TXT/temp.txt","Shared/TXT/Rezervari.txt");
 
 if(gasit) cout<<"Data a fost modificata!\n";
 else cout<<"Data nu a putut fi gasita!\n";
@@ -452,7 +448,7 @@ else cout<<"Data nu a putut fi gasita!\n";
 
 //INFORMATII
 
-void informatiiUtileSali(){
+void informatiiUtileSali(){  //am folosit template pentru a putea folosi functiam maxim pentru orice tip de date
 vector<Sala>s=citireSali();
 
 int maxCap=0;
@@ -465,7 +461,7 @@ for(auto&x:s){
 
 ifstream fin("Shared/TXT/Rezervari.txt");
 
-map<string,int>freq;
+map<string,int>freq; //am folosit map pentru a putea numara cate rezervari are o sala
 
 string data,sala,n1,n2;
 int id;
