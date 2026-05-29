@@ -2,6 +2,7 @@
 #include<fstream>
 #include<ctime>
 #include<map>
+#include <sstream>  //pentru a imparti un vector de cuvinte in cuvinte
 
 //VALIDARI
 
@@ -131,9 +132,10 @@ void cautareDupaFacilitati(string f){
 
 //PRE REZERVARE
 
+//PRE REZERVARE
+
 void preRezervare(string numeSala,int cap,int zi,int luna,int an,string fac,string client){
 
-    
          if(!validareCapacitate(cap)){
              cout<<"Capacitate invalida!\n";
                return;
@@ -158,7 +160,7 @@ vector<Sala>s=citireSali();
 Sala gasita;
 bool exista=false;
 
-//se fac validari pentru datele pre-rezervarii
+// se cauta sala dupa denumire
         for(auto&x:s){
           if(x.getDenumire()==numeSala){
            gasita=x;
@@ -177,29 +179,48 @@ bool exista=false;
             return;
         }
 
-       bool ok=false;
-      for(auto&f:gasita.getFacilitati())
-             if(f==fac)ok=true;
+ // verificarea tuturor facilitatilor introduse intre ghilimele
+ // exemplu: "wifi videoproiector aer_conditionat"
 
-          if(!ok){
-          cout<<"Nu are facilitatea!\n";
-          return;
+    stringstream ss(fac);
+    string cuv;
+
+    vector<string> facilitatiSala = gasita.getFacilitati();
+
+    while(ss >> cuv){
+
+        bool gasit = false;
+
+        for(auto &f : facilitatiSala){
+            if(f == cuv){
+                gasit = true;
+                break;
+            }
         }
 
+        if(!gasit){
+            cout<<"Nu are facilitatea "<<cuv<<"!\n";
+            return;
+        }
+    }
+
       ifstream fin("Shared/TXT/preRezervari.txt");
-          int lastId=0;
+      int lastId=0;
 
-        string data,sala,clientFis;
-         int id;
+      string data,sala,clientFis;
+      int id;
 
-          while(fin>>data>>id>>sala>>clientFis)
+      while(fin>>data>>id>>sala>>clientFis)
              if(id>lastId)lastId=id;
 
        fin.close();
 
-          ofstream fout("Shared/TXT/preRezervari.txt",ios::app); //se inchide fisieru si e adaugat
+      ofstream fout("Shared/TXT/preRezervari.txt",ios::app);
 
-     fout<<to_string(zi)<<"/"<<to_string(luna)<<"/"<<to_string(an)<<" "<<lastId+1<<" "<<gasita.getDenumire()<<" "<<client<<"\n";
+      fout<<to_string(zi)<<"/"<<to_string(luna)<<"/"<<to_string(an)<<" "
+          <<lastId+1<<" "
+          <<gasita.getDenumire()<<" "
+          <<client<<"\n";
 
        cout<<"Adaugata in lista provizorie!\n";
 }
@@ -237,6 +258,8 @@ bool gasit=false;
 
 //REZERVARE
 
+//REZERVARE
+
 void rezervareSala(string numeSala,int cap,int zi,int luna,int an,string fac,string client){
 
         if(!validareCapacitate(cap)){
@@ -250,8 +273,33 @@ void rezervareSala(string numeSala,int cap,int zi,int luna,int an,string fac,str
         }
 
           vector<Sala>s=citireSali();
+
+          // verificare daca sala este deja rezervata la aceeasi data
+
+          ifstream verificare("Shared/TXT/Rezervari.txt");
+
+          string dataFis,salaFis;
+          int idFis;
+
+          string dataNoua=to_string(zi)+"/"+to_string(luna)+"/"+to_string(an);
+
+          while(verificare>>dataFis>>idFis>>salaFis){
+
+                string rest;
+                getline(verificare,rest);
+
+                if(dataFis==dataNoua && salaFis==numeSala){
+                    cout<<"Sala este deja rezervata la aceasta data!\n";
+                    return;
+                }
+          }
+
+          verificare.close();
+
            for(auto&x:s){
+
             if(x.getDenumire()==numeSala){
+
                 if(x.getCapacitate()<cap){
                     cout<<"Capacitate insuficienta!\n";
                     return;
@@ -262,32 +310,51 @@ void rezervareSala(string numeSala,int cap,int zi,int luna,int an,string fac,str
                    return;
                 }
 
-           bool ok=false;
-           for(auto&f:x.getFacilitati())
-           if(f==fac)ok=true;
-           
-           if(!ok){
-            cout<<"Nu are facilitatea dorita!\n";
-            return;
-}
+ // verificarea tuturor facilitatilor introduse intre ghilimele
+
+            stringstream ss(fac);  //fac- e fiecare facilitate din vector
+            string cuv;
+
+            vector<string> facilitatiSala = x.getFacilitati();
+
+            while(ss >> cuv){
+
+                bool gasit = false;
+
+                for(auto &f : facilitatiSala){
+
+                    if(f == cuv){
+                        gasit = true;
+                        break;
+                    }
+                }
+
+                if(!gasit){
+                    cout<<"Nu are facilitatea "<<cuv<<"!\n";
+                    return;
+                }
+            }
 
    ifstream fin("Shared/TXT/Rezervari.txt");
    int lastId=0;
 
-       string data,sala,cl;
-     int id;
+   string data,sala,cl;
+   int id;
 
            while(fin>>data>>id>>sala>>cl)
-            if(id>lastId)lastId=id;
+                if(id>lastId)lastId=id;
 
            fin.close();
 
        ofstream fout("Shared/TXT/Rezervari.txt",ios::app);
 
-   fout<<to_string(zi)<<"/"<<to_string(luna)<<"/"<<to_string(an)<<" "<<lastId+1<<" "<<x.getDenumire()<<" "<<client<<"\n";
+   fout<<to_string(zi)<<"/"<<to_string(luna)<<"/"<<to_string(an)<<" "
+       <<lastId+1<<" "
+       <<x.getDenumire()<<" "
+       <<client<<"\n";
  
           cout<<"REZERVARE EFECTUATA!\n";
-         return;
+          return;
         }
     }
 
@@ -361,7 +428,7 @@ ofstream temp("Shared/TXT/temp.txt");
             remove("Shared/TXT/preRezervari.txt");
             rename("Shared/TXT/temp.txt","Shared/TXT/preRezervari.txt");
 
-            if(!gasit)cout<<"REZERVAREA PROVIZORIE A FOST STEARSA!\n";
+            if(gasit)cout<<"REZERVAREA PROVIZORIE A FOST STEARSA!\n";
             else cout<<"Nu exista!\n";
         }
 

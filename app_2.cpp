@@ -51,8 +51,8 @@ int main(int argc,char* argv[])
 
     else if(comanda=="rezervare_directa"){
 
-    if(argc < 9){
-        cout << "Format: rezervare_directa <sala> <cap> <zi> <luna> <an> <facilitati...> <nume> <prenume>\n";
+    if(argc < 10){
+        cout << "Format: rezervare_directa <sala> <cap> <zi> <luna> <an> \"facilitati\" <nume> <prenume>\n";
         return 0;
     }
 
@@ -62,16 +62,11 @@ int main(int argc,char* argv[])
     int luna = stoi(argv[5]);
     int an = stoi(argv[6]);
 
-    // CLIENT = ultimele 2 cuvinte (OBLIGATORIU 2 CUVINTE)
-    string client = string(argv[argc-2]) + " " + string(argv[argc-1]);
+    // facilitatile sunt intre ghilimele si sunt tratate ca UN SINGUR argument
+    string fac = argv[7];
 
-    // FACILITĂȚI = tot între argv[7] și înainte de client
-    string fac = "";
-
-    for(int i = 7; i < argc - 2; i++){
-        fac += argv[i];
-        if(i < argc - 3) fac += " ";
-    }
+    // ultimele 2 argumente = nume + prenume
+    string client = string(argv[8]) + " " + string(argv[9]);
 
     rezervareSala(numeSala, cap, zi, luna, an, fac, client);
 }
@@ -81,7 +76,7 @@ int main(int argc,char* argv[])
    else if(comanda=="rezervare_provizorie"){
 
     if(argc < 9){
-        cout << "Format: rezervare_provizorie <sala> <cap> <zi> <luna> <an> <facilitati...> <nume> <prenume>\n";
+        cout << "Format: rezervare_provizorie <sala> <cap> <zi> <luna> <an> \"facilitati\" <nume> <prenume>\n";
         return 0;
     }
 
@@ -91,14 +86,10 @@ int main(int argc,char* argv[])
     int luna = stoi(argv[5]);
     int an = stoi(argv[6]);
 
-    string client = string(argv[argc-2]) + " " + string(argv[argc-1]);
+    // toate facilitatile sunt citite ca un singur argument
+    string fac = argv[7];
 
-    string fac = "";
-   //pt a putea citi mai multe facilitati
-    for(int i = 7; i < argc - 2; i++){
-        fac += argv[i];
-        if(i < argc - 3) fac += " ";
-    }
+    string client = string(argv[8]) + " " + string(argv[9]);
 
     preRezervare(numeSala, cap, zi, luna, an, fac, client);
 }
